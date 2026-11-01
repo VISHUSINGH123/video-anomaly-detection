@@ -9,6 +9,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 from vad.inference.video_scoring import VideoPredictionResult
+from vad.utils.logging import setup_logger
+
+logger = setup_logger("vad.visualization")
 
 # Use non-interactive Agg backend for headless safety
 matplotlib.use("Agg")
@@ -123,7 +126,7 @@ def export_annotated_video(
     frames_rgb: np.ndarray,
     prediction: VideoPredictionResult,
     output_video_path: Path | str,
-) -> Path:
+) -> Optional[Path]:
     """Export an MP4 video with a live anomaly-score bar and status banner overlay.
 
     Args:
@@ -142,12 +145,26 @@ def export_annotated_video(
     target_w = max(w, 480)
     target_h = max(h, 360)
 
-    fourcc = cv2.VideoWriter_fourcc(*"mp4v")
-    writer = cv2.VideoWriter(
-        str(out_path), fourcc, float(max(prediction.fps, 1.0)), (target_w, target_h)
-    )
-    if not writer.isOpened():
-        raise RuntimeError(f"Failed to open OpenCV VideoWriter for path: {out_path}")
+    writer = None
+    for codec in ("mp4v", "avc1", "XVID", "MJPG"):
+        try:
+            fourcc = cv2.VideoWriter_fourcc(*codec)
+            w_candidate = cv2.VideoWriter(
+                str(out_path), fourcc, float(max(prediction.fps, 1.0)), (target_w, target_h)
+            )
+            if w_candidate.isOpened():
+                writer = w_candidate
+                break
+            w_candidate.release()
+        except Exception:
+            continue
+
+    if writer is None or not writer.isOpened():
+        logger.warning(
+            "Could not initialize OpenCV VideoWriter with standard codecs for %s. Skipping overlay export.",
+            out_path,
+        )
+        return None
 
     try:
         for i in range(num_frames):

@@ -145,9 +145,15 @@ def render_app() -> None:
             if s_dir.exists():
                 sample_videos.extend(sorted(s_dir.rglob("*.mp4")))
         sample_options = ["(None — use uploaded video)"] + [
-            str(p.relative_to(PROJECT_ROOT)) for p in sample_videos
+            p.relative_to(PROJECT_ROOT).as_posix() for p in sample_videos
         ]
-        selected_sample = st.selectbox("Or Select Demo Surveillance Video", options=sample_options)
+        default_idx = 1 if len(sample_options) > 1 else 0
+        selected_sample = st.selectbox(
+            "Or Select Demo Surveillance Video",
+            options=sample_options,
+            index=default_idx,
+            help="Pre-loaded surveillance videos from UCSD Ped2 benchmark ready for immediate testing.",
+        )
 
     run_btn = st.button("Run Anomaly Detection Pipeline", type="primary")
 
@@ -276,16 +282,22 @@ def render_app() -> None:
         st.subheader("Annotated Video Output")
         out_vid_dir = PROJECT_ROOT / "outputs/streamlit"
         out_vid_path = out_vid_dir / f"{pred_result.video_id}_annotated.mp4"
-        export_annotated_video(decoded.frames_rgb, pred_result, out_vid_path)
-        with open(out_vid_path, "rb") as vf:
-            vid_bytes = vf.read()
-        st.video(vid_bytes)
-        st.download_button(
-            label="Download Annotated MP4 Video",
-            data=vid_bytes,
-            file_name=out_vid_path.name,
-            mime="video/mp4",
-        )
+        try:
+            exported_path = export_annotated_video(decoded.frames_rgb, pred_result, out_vid_path)
+            if exported_path and exported_path.exists():
+                with open(exported_path, "rb") as vf:
+                    vid_bytes = vf.read()
+                st.video(vid_bytes)
+                st.download_button(
+                    label="Download Annotated MP4 Video",
+                    data=vid_bytes,
+                    file_name=exported_path.name,
+                    mime="video/mp4",
+                )
+            else:
+                st.info("Video overlay rendering was skipped due to host environment codec limitations.")
+        except Exception as vid_exc:
+            st.warning(f"Video overlay could not be rendered: {vid_exc}")
 
 
 if __name__ == "__main__":
