@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "vad"
+version = "0.1.0"
+description = "Video Anomaly Detection Using Deep Features (VideoMAE + DINOv2) and Multi-Prior Temporal Fusion"
+readme = "README.md"
+requires-python = ">=3.10"
+license = {text = "MIT"}
+authors = [
+    {name = "VAD Research Engineering"}
+]
+dependencies = [
+    "numpy>=1.26.0",
+    "scipy>=1.11.0",
+    "scikit-learn>=1.3.0",
+    "torch>=2.1.0",
+    "torchvision>=0.16.0",
+    "transformers>=4.38.0",
+    "opencv-python-headless>=4.8.0",
+    "Pillow>=10.0.0",
+    "PyYAML>=6.0.1",
+    "pandas>=2.1.0",
+    "matplotlib>=3.8.0",
+    "tqdm>=4.66.0",
+    "streamlit>=1.30.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+addopts = "-ra -q"

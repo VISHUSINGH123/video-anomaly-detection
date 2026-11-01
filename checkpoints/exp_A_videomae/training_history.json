@@ -1,0 +1,95 @@
+{
+  "experiment_name": "vad_multiprior_cpu",
+  "is_synthetic": false,
+  "epochs_completed": 7,
+  "best_criterion": 1.0,
+  "total_training_sec": 1.385,
+  "best_checkpoint": "checkpoints\\exp_A_videomae\\best.pt",
+  "last_checkpoint": "checkpoints\\exp_A_videomae\\last.pt",
+  "history": [
+    {
+      "epoch": 1,
+      "train_loss": 1.212758,
+      "train_cls_loss": 1.21095,
+      "train_smooth_loss": 0.005818,
+      "train_sparse_loss": 0.303437,
+      "lr": 0.00049803,
+      "val_loss": 1.456651,
+      "val_frame_roc_auc": 1.0,
+      "val_frame_pr_auc": 0.9999999999999999,
+      "elapsed_sec": 0.309
+    },
+    {
+      "epoch": 2,
+      "train_loss": 0.921118,
+      "train_cls_loss": 0.919193,
+      "train_smooth_loss": 0.004439,
+      "train_sparse_loss": 0.340646,
+      "lr": 0.00049215,
+      "val_loss": 1.048574,
+      "val_frame_roc_auc": 1.0,
+      "val_frame_pr_auc": 1.0,
+      "elapsed_sec": 0.138
+    },
+    {
+      "epoch": 3,
+      "train_loss": 0.897706,
+      "train_cls_loss": 0.895082,
+      "train_smooth_loss": 0.003368,
+      "train_sparse_loss": 0.491117,
+      "lr": 0.00048244,
+      "val_loss": 0.976837,
+      "val_frame_roc_auc": 1.0,
+      "val_frame_pr_auc": 1.0,
+      "elapsed_sec": 0.15
+    },
+    {
+      "epoch": 4,
+      "train_loss": 0.882685,
+      "train_cls_loss": 0.879915,
+      "train_smooth_loss": 0.002511,
+      "train_sparse_loss": 0.528996,
+      "lr": 0.00046908,
+      "val_loss": 0.984305,
+      "val_frame_roc_auc": 1.0,
+      "val_frame_pr_auc": 1.0,
+      "elapsed_sec": 0.14
+    },
+    {
+      "epoch": 5,
+      "train_loss": 0.964316,
+      "train_cls_loss": 0.961881,
+      "train_smooth_loss": 0.002121,
+      "train_sparse_loss": 0.465924,
+      "lr": 0.00045225,
+      "val_loss": 1.089422,
+      "val_frame_roc_auc": 1.0,
+      "val_frame_pr_auc": 1.0,
+      "elapsed_sec": 0.131
+    },
+    {
+      "epoch": 6,
+      "train_loss": 0.819397,
+      "train_cls_loss": 0.817278,
+      "train_smooth_loss": 0.001733,
+      "train_sparse_loss": 0.406396,
+      "lr": 0.00043224,
+      "val_loss": 1.107827,
+      "val_frame_roc_auc": 1.0,
+      "val_frame_pr_auc": 1.0,
+      "elapsed_sec": 0.137
+    },
+    {
+      "epoch": 7,
+      "train_loss": 0.883667,
+      "train_cls_loss": 0.88167,
+      "train_smooth_loss": 0.001559,
+      "train_sparse_loss": 0.383925,
+      "lr": 0.00040936,
+      "val_loss": 1.128659,
+      "val_frame_roc_auc": 1.0,
+      "val_frame_pr_auc": 1.0,
+      "elapsed_sec": 0.13
+    }
+  ]
+}

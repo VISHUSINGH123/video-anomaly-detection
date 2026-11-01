@@ -1,0 +1,77 @@
+# Default Configuration for Video Anomaly Detection Using Deep Features and Multi-Prior Fusion
+experiment_name: "vad_multiprior_default"
+seed: 42
+device: "auto" # auto, cpu, cuda, directml, mps
+
+data:
+  dataset_name: "ucsd_ped2" # ucsd_ped1, ucsd_ped2, shanghaitech, ucf_crime, custom, synthetic
+  raw_video_dir: "data/raw"
+  processed_feature_dir: "data/processed"
+  annotations_dir: "data/annotations"
+  clip_length: 16
+  clip_stride: 8
+  target_fps: null # null preserves native video FPS
+  short_video_policy: "pad" # pad (loop/repeat last frame) or drop
+
+encoders:
+  videomae:
+    enabled: true
+    model_name: "MCG-NJU/videomae-base"
+    feature_dim: 768
+    num_frames: 16
+    image_size: 224
+    batch_size: 4
+    pooling: "mean" # mean over spatiotemporal tokens
+    use_fp16: false
+    local_files_only: true
+  dinov2:
+    enabled: true
+    model_name: "facebook/dinov2-base"
+    feature_dim: 768
+    image_size: 224
+    frame_sample_rate: 2 # sample every 2nd frame within a 16-frame clip (8 frames)
+    batch_size: 16
+    pooling: "cls_and_std" # "cls" (768-d) or "cls_and_std" (768-d mean + 768-d temporal std projected to 768-d)
+    use_fp16: false
+    local_files_only: true
+
+temporal:
+  enabled: true
+  hidden_dim: 256
+  num_layers: 4
+  kernel_size: 3
+  dilation_base: 2
+  dropout: 0.2
+  causal: false # false = bidirectional context for offline/sliding window; true = strictly causal
+
+fusion:
+  mode: "gated_multiprior" # gated_multiprior, concat_mlp, videomae_only, dinov2_only, no_tcn
+  proj_dim: 256
+  dropout: 0.2
+  include_motion_prior: true # explicitly computes L2 temporal feature velocity ||f_t - f_{t-1}||_2
+  temperature: 1.0
+
+training:
+  supervision: "supervised_clip" # supervised_clip (frame/clip labels) or weakly_supervised_mil (video-level labels)
+  epochs: 30
+  batch_size: 8
+  learning_rate: 0.0005
+  weight_decay: 0.0001
+  pos_weight: 2.0
+  smoothness_lambda: 0.05
+  sparsity_lambda: 0.005
+  mil_topk_ratio: 0.15
+  early_stopping_patience: 8
+  checkpoint_dir: "checkpoints"
+
+evaluation:
+  threshold: 0.5
+  smoothing_window: 3
+  output_dir: "outputs/evaluation"
+
+inference:
+  window_length: 16
+  window_stride: 8
+  smoothing_window: 3
+  threshold: 0.5
+  output_dir: "outputs/predictions"

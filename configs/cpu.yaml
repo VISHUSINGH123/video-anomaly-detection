@@ -1,0 +1,77 @@
+# CPU-Optimized Configuration (compatible with AMD/Intel laptops without NVIDIA CUDA)
+experiment_name: "vad_multiprior_cpu"
+seed: 42
+device: "cpu"
+
+data:
+  dataset_name: "ucsd_ped2"
+  raw_video_dir: "data/raw"
+  processed_feature_dir: "data/processed"
+  annotations_dir: "data/annotations"
+  clip_length: 16
+  clip_stride: 16 # Non-overlapping windows for faster CPU feature extraction
+  target_fps: null
+  short_video_policy: "pad"
+
+encoders:
+  videomae:
+    enabled: true
+    model_name: "MCG-NJU/videomae-base"
+    feature_dim: 768
+    num_frames: 16
+    image_size: 224
+    batch_size: 2
+    pooling: "mean"
+    use_fp16: false
+    local_files_only: true
+  dinov2:
+    enabled: true
+    model_name: "facebook/dinov2-base"
+    feature_dim: 768
+    image_size: 224
+    frame_sample_rate: 4 # Sample 4 frames per 16-frame clip on CPU
+    batch_size: 8
+    pooling: "cls"
+    use_fp16: false
+    local_files_only: true
+
+temporal:
+  enabled: true
+  hidden_dim: 256
+  num_layers: 3
+  kernel_size: 3
+  dilation_base: 2
+  dropout: 0.2
+  causal: false
+
+fusion:
+  mode: "gated_multiprior"
+  proj_dim: 256
+  dropout: 0.2
+  include_motion_prior: true
+  temperature: 1.0
+
+training:
+  supervision: "supervised_clip"
+  epochs: 20
+  batch_size: 4
+  learning_rate: 0.0005
+  weight_decay: 0.0001
+  pos_weight: 2.0
+  smoothness_lambda: 0.05
+  sparsity_lambda: 0.005
+  mil_topk_ratio: 0.15
+  early_stopping_patience: 6
+  checkpoint_dir: "checkpoints"
+
+evaluation:
+  threshold: 0.5
+  smoothing_window: 3
+  output_dir: "outputs/evaluation"
+
+inference:
+  window_length: 16
+  window_stride: 16
+  smoothing_window: 3
+  threshold: 0.5
+  output_dir: "outputs/predictions"
