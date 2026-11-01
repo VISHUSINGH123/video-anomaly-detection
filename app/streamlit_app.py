@@ -29,6 +29,27 @@ from vad.inference.predictor import VideoAnomalyPredictor
 from vad.inference.visualization import export_annotated_video, plot_anomaly_timeline
 
 
+def _ensure_default_checkpoint() -> Path:
+    """Ensure at least one valid checkpoint exists for instant 0-friction deployment."""
+    best_ckpt = PROJECT_ROOT / "checkpoints/best.pt"
+    if best_ckpt.exists():
+        return best_ckpt
+    demo_ckpt = PROJECT_ROOT / "checkpoints/synthetic_demo/best.pt"
+    if demo_ckpt.exists():
+        return demo_ckpt
+
+    # Synthesize clean baseline checkpoint on the fly (<0.1s)
+    demo_ckpt.parent.mkdir(parents=True, exist_ok=True)
+    from vad.config import VADConfig
+    from vad.models.anomaly_detector import AnomalyDetector
+    from vad.training.checkpoints import save_checkpoint
+
+    cfg = VADConfig()
+    model = AnomalyDetector(config=cfg)
+    save_checkpoint(demo_ckpt, model=model, config=cfg, is_synthetic=True)
+    return demo_ckpt
+
+
 def render_app() -> None:
     st.set_page_config(
         page_title="Video Anomaly Detection — Multi-Prior Fusion",
@@ -52,6 +73,12 @@ def render_app() -> None:
         "use a larger window stride (e.g., 16 frames) for faster processing."
     )
 
+    default_ckpt_path = _ensure_default_checkpoint()
+    try:
+        default_ckpt_str = str(default_ckpt_path.relative_to(PROJECT_ROOT).as_posix())
+    except ValueError:
+        default_ckpt_str = str(default_ckpt_path)
+
     with st.sidebar:
         st.header("Inference Configuration")
         device_choice = st.selectbox(
@@ -62,14 +89,9 @@ def render_app() -> None:
         dev_info = resolve_device(device_choice)
         st.caption(f"Resolved Hardware: `{dev_info.device}` ({dev_info.device_name})")
 
-        default_ckpt = (
-            "checkpoints/best.pt"
-            if (PROJECT_ROOT / "checkpoints/best.pt").exists()
-            else "checkpoints/synthetic_demo/best.pt"
-        )
         checkpoint_path_str = st.text_input(
             "Model Checkpoint Path (.pt)",
-            value=default_ckpt,
+            value=default_ckpt_str,
         )
 
         use_synthetic_encoders = st.checkbox(
@@ -257,6 +279,7 @@ def render_app() -> None:
         export_annotated_video(decoded.frames_rgb, pred_result, out_vid_path)
         with open(out_vid_path, "rb") as vf:
             vid_bytes = vf.read()
+        st.video(vid_bytes)
         st.download_button(
             label="Download Annotated MP4 Video",
             data=vid_bytes,

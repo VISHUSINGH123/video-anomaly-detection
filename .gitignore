@@ -55,6 +55,7 @@ data/annotations/*
 *.safetensors
 checkpoints/**/*.pt
 checkpoints/*.pt
+!checkpoints/synthetic_demo/best.pt
 !checkpoints/README.md
 outputs/*
 !outputs/README.md
